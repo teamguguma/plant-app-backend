@@ -8,7 +8,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int id;
 
     @Column(unique = true, nullable = false)
     private String clientUuid;
@@ -23,6 +23,10 @@ public class User {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     private LocalDateTime updatedAt;
+
+    public void setClientUuid(String clientUuid) {
+        this.clientUuid = clientUuid;
+    }
 
     // Getters and Setters
 }
