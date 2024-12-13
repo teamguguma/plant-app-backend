@@ -3,6 +3,7 @@
 **/.DS_Store
 **/._.DS_Store
 
+.idea
 HELP.md
 .gradle
 build/
@@ -23,7 +24,7 @@ bin/
 !**/src/test/**/bin/
 
 ### IntelliJ IDEA ###
-.idea
+#.idea
 *.iws
 *.iml
 *.ipr
