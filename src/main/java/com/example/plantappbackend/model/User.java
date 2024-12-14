@@ -1,37 +1,55 @@
 package com.example.plantappbackend.model;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
+@Table(name = "user") // 테이블 이름 지정
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(unique = true, nullable = false)
+    @Column(name = "username", nullable = false) // 사용자 이름
+    private String username;
+
+    @Column(name = "client_uuid", unique = true, nullable = false) // 고유 UUID
     private String clientUuid;
 
-    private String username;
-    private String email;
-    private String passwordHash;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Plant> plants;
 
-    @Enumerated(EnumType.STRING)
-    private Role role = Role.USER;
+    // Getters and Setters
+    public int getId() {
+        return id;
+    }
 
-    private LocalDateTime createdAt = LocalDateTime.now();
+    public void setId(int id) {
+        this.id = id;
+    }
 
-    private LocalDateTime updatedAt;
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getClientUuid() {
+        return clientUuid;
+    }
 
     public void setClientUuid(String clientUuid) {
         this.clientUuid = clientUuid;
     }
 
-    // Getters and Setters
-}
+    public List<Plant> getPlants() {
+        return plants;
+    }
 
-enum Role {
-    USER,
-    ADMIN
+    public void setPlants(List<Plant> plants) {
+        this.plants = plants;
+    }
 }

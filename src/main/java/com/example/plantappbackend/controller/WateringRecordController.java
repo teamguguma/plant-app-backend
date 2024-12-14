@@ -21,7 +21,7 @@ public class WateringRecordController {
     }
 
     @GetMapping("/{plantId}")
-    public ResponseEntity<List<WateringRecord>> getRecords(@PathVariable Long plantId) {
+    public ResponseEntity<List<WateringRecord>> getRecords(@PathVariable int plantId) {
         return ResponseEntity.ok(wateringRecordService.getWateringRecords(plantId));
     }
 }

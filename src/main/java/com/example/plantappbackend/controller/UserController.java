@@ -17,8 +17,8 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<User> login(@RequestParam String clientUuid) {
-        User user = userService.findOrCreateUser(clientUuid);
+    public ResponseEntity<User> login(@RequestParam String client_uuid) {
+        User user = userService.findOrCreateUser(client_uuid);
         return ResponseEntity.ok(user);
     }
 }
