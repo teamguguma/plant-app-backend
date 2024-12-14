@@ -1,7 +1,6 @@
 package com.example.plantappbackend.controller;
 
 import com.example.plantappbackend.model.Plant;
-import com.example.plantappbackend.model.User;
 import com.example.plantappbackend.service.PlantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/plants/register")
+@RequestMapping("/api/plants")
 public class PlantController {
 
     @Autowired
@@ -23,14 +22,18 @@ public class PlantController {
     }
 
     // 식물 등록
-    @PostMapping
-    public ResponseEntity<Plant> addPlant(@RequestBody Plant plant) {
-        // User 객체가 포함되어 있다고 가정
-        User user = new User();
-        user.setId(plant.getUser().getId());
-        plant.setUser(user);
+    @PostMapping("/register")
+    public ResponseEntity<?> addPlant(@RequestBody Plant plant) {
+        try {
+            // 유효성 검사: user_id가 포함되어 있는지 확인
+            if (plant.getUser() == null || plant.getUser().getId() == 0) {
+                return ResponseEntity.badRequest().body("user_id 정보가 필요합니다.");
+            }
 
-        Plant savedPlant = plantService.savePlant(plant);
-        return ResponseEntity.ok(savedPlant);
+            Plant savedPlant = plantService.savePlant(plant);
+            return ResponseEntity.ok(savedPlant);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("요청 처리 중 오류가 발생했습니다: " + e.getMessage());
+        }
     }
 }

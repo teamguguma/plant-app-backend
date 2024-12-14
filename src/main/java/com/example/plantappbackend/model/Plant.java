@@ -15,11 +15,10 @@ public class Plant {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
     private String name;
+    @Column(name = "nickname")
     private String nickname;
     private String imageUrl;
-
     private Integer waterInterval; // 물 주기
     private LocalDate lastWateredDate; // 마지막으로 물 준 날짜
     private String characteristics;
