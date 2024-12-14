@@ -1,6 +1,6 @@
 package com.example.plantappbackend.service;
 
-import com.example.plantappbackend.Repository.WateringRecordRepository;
+import com.example.plantappbackend.repository.WateringRecordRepository;
 import com.example.plantappbackend.model.WateringRecord;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +15,7 @@ public class WateringRecordService {
         this.wateringRecordRepository = wateringRecordRepository;
     }
 
-    public List<WateringRecord> getWateringRecords(Long plantId) {
+    public List<WateringRecord> getWateringRecords(int plantId) {
         return wateringRecordRepository.findByPlantIdOrderByWateredAtDesc(plantId);
     }
 

@@ -27,4 +27,75 @@ public class Plant {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     // Getters and Setters
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public Integer getWaterInterval() {
+        return waterInterval;
+    }
+
+    public void setWaterInterval(Integer waterInterval) {
+        this.waterInterval = waterInterval;
+    }
+
+    public LocalDate getLastWateredDate() {
+        return lastWateredDate;
+    }
+
+    public void setLastWateredDate(LocalDate lastWateredDate) {
+        this.lastWateredDate = lastWateredDate;
+    }
+
+    public String getCharacteristics() {
+        return characteristics;
+    }
+
+    public void setCharacteristics(String characteristics) {
+        this.characteristics = characteristics;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 }

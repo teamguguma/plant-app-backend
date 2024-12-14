@@ -1,3 +1,5 @@
+package com.example.plantappbackend.controller;
+
 import com.example.plantappbackend.service.ImageStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
