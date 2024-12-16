@@ -1,3 +1,5 @@
+package com.example.plantappbackend.controller;
+
 import com.example.plantappbackend.model.User;
 import com.example.plantappbackend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,29 +18,40 @@ public class UserController {
     }
 
     // 로그인 또는 사용자 생성
-    @PostMapping("/login")
-    public ResponseEntity<User> loginOrCreateUser(
-            @RequestParam String client_uuid,
+    @PostMapping("/check")
+    public ResponseEntity<String> checkUserExists(@RequestParam String client_uuid) {
+        boolean exists = userService.userExists(client_uuid);
+        if (exists) {
+            return ResponseEntity.ok("User exists.");
+        } else {
+            return ResponseEntity.ok("User does not exist.");
+        }
+    }
+
+    // 신규유저
+    @PostMapping("/create")
+    public ResponseEntity<User> userCreate(
+            @RequestParam String user_uuid,
             @RequestParam(required = false) String nickname
     ) {
-        User user = userService.findOrCreateUser(client_uuid, nickname);
+        User user = userService.userCreate(user_uuid, nickname);
         return ResponseEntity.ok(user);
     }
 
     // 닉네임 변경
     @PutMapping("/nickname")
     public ResponseEntity<User> updateNickname(
-            @RequestParam String client_uuid,
+            @RequestParam String user_uuid,
             @RequestParam String newNickname
     ) {
-        User updatedUser = userService.updateNickname(client_uuid, newNickname);
+        User updatedUser = userService.updateNickname(user_uuid, newNickname);
         return ResponseEntity.ok(updatedUser);
     }
 
     // 사용자 삭제
     @DeleteMapping("/delete")
-    public ResponseEntity<String> deleteUser(@RequestParam String client_uuid) {
-        userService.deleteUser(client_uuid);
+    public ResponseEntity<String> deleteUser(@RequestParam String user_uuid) {
+        userService.deleteUser(user_uuid);
         return ResponseEntity.ok("User successfully deleted.");
     }
 }
