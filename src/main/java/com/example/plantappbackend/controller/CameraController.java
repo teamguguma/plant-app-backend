@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/plants")
 public class CameraController {
@@ -22,9 +24,14 @@ public class CameraController {
 
     // OpenAI API 식물 이름 인식
     @PostMapping("/recognize")
-    public ResponseEntity<String> recognizePlant(@RequestParam("image") MultipartFile image) {
-        // Service 호출 후, plantName 문자열을 직접 반환
-        String plantName = cameraService.detectPlant(image);
-        return ResponseEntity.ok(plantName); // 이름 반환
+    public ResponseEntity<Map<String, String>> detectPlantName(@RequestParam("image") MultipartFile image) {
+        Map<String, String> result = cameraService.detectPlantName(image);
+        return ResponseEntity.ok(result);
+    }
+    // OpenAI API 식물 이름 인식
+    @PostMapping("/status")
+    public ResponseEntity<Map<String, String>> detectPlantNameAndStatus(@RequestParam("image") MultipartFile image) {
+        Map<String, String> result = cameraService.detectPlantNameAndStatus(image);
+        return ResponseEntity.ok(result);
     }
 }

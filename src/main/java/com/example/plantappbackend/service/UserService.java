@@ -11,11 +11,11 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public User findOrCreateUser(String client_uuidd) {
-        return userRepository.findByClientUuid(client_uuidd)
+    public User findUser(String client_uuid) {
+        return userRepository.findUserByClientUuid(client_uuid)
                 .orElseGet(() -> {
                     User user = new User();
-                    user.setClientUuid(client_uuidd);
+                    user.setClientUuid(client_uuid);
                     return userRepository.save(user);
                 });
     }

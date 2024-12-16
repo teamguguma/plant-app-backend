@@ -15,7 +15,7 @@ public class WateringRecordService {
         this.wateringRecordRepository = wateringRecordRepository;
     }
 
-    public List<WateringRecord> getWateringRecords(int plantId) {
+    public List<WateringRecord> getWateringRecords(Long plantId) {
         return wateringRecordRepository.findByPlantIdOrderByWateredAtDesc(plantId);
     }
 

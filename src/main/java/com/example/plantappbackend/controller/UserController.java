@@ -18,7 +18,14 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<User> login(@RequestParam String client_uuid) {
-        User user = userService.findOrCreateUser(client_uuid);
+        User user = userService.findUser(client_uuid);
         return ResponseEntity.ok(user);
     }
+
+//    유저 추가
+//    로그인
+//    유저 탈퇴
+//    유저 닉네임 변경
+//    유저 환경설정 변경
+//    핸드폰 바꾸기
 }
