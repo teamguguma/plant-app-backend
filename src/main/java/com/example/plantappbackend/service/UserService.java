@@ -51,4 +51,9 @@ public class UserService {
 
         return userRepository.save(newUser);
     }
+
+    // UUID를 기반으로 사용자 존재 여부 확인
+    public boolean userExists(String clientUuid) {
+        return userRepository.findByClientUuid(clientUuid).isPresent();
+    }
 }
