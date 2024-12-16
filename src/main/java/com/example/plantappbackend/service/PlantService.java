@@ -20,7 +20,7 @@ public class PlantService {
     }
 
     // Plant -> PlantDto로 변환하는 메서드
-    public List<PlantDto> getPlantDtosByUser(int userId) {
+    public List<PlantDto> getPlantDtosByUser(Long userId) {
         List<Plant> plants = getPlantsByUser(userId); // 기존 메서드 호출
         return plants.stream()
                 .map(plant -> new PlantDto(
@@ -41,7 +41,7 @@ public class PlantService {
     }
 
     // Update (업데이트)
-    public Plant updatePlant(int id, String updatedNickname) {
+    public Plant updatePlant(Long id, String updatedNickname) {
         Plant plant = plantRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Plant not found"));
         plant.setNickname(updatedNickname); // 닉네임 업데이트
@@ -49,7 +49,7 @@ public class PlantService {
     }
 
     // Delete (ID로 삭제)
-    public void deletePlantById(int id) {
+    public void deletePlantById(Long id) {
         plantRepository.deleteById(id); // ID로 삭제
     }
 
