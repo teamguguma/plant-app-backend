@@ -109,8 +109,14 @@ public class CameraService {
         requestBody.put("messages", messages);
         requestBody.put("temperature", 0.0);
 
+        // 요청 데이터 로그 출력
+        System.out.println("GPT 요청 데이터: " + requestBody);
+
         HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
         ResponseEntity<Map> response = restTemplate.postForEntity(gptEndpoint, requestEntity, Map.class);
+
+        // 응답 데이터 로그 출력
+        System.out.println("GPT 응답 데이터: " + response.getBody());
 
         Map responseBody = response.getBody();
         if (responseBody != null && responseBody.containsKey("choices")) {
@@ -129,40 +135,57 @@ public class CameraService {
 
     // 식물 분석 공통 로직
     private Map<String, String> detectPlant(MultipartFile image, String systemPrompt, String userPrompt) {
-        byte[] compressedImage = validateAndCompressImage(image);
-
-        // Base64 인코딩된 이미지 생성
-        String base64Image = "data:image/jpeg;base64," + Base64.encodeBase64String(compressedImage);
-
-        // 메시지 형식 수정
-        List<Map<String, Object>> messages = List.of(
-                Map.of("role", "system", "content", systemPrompt),
-                Map.of("role", "user", "content", List.of(
-                        Map.of("type", "text", "text", userPrompt),
-                        Map.of("type", "image_url", "image_url", Map.of("url", base64Image))
-                ))
-        );
-
         try {
-            return callGptApi(base64Image, messages);
-        } catch (IOException e) {
+            // 이미지 압축 및 검증
+            byte[] compressedImage = validateAndCompressImage(image);
+
+            // 이미지 업로드 후 URL 가져오기
+            String fileUrl = awsS3Service.uploadFile(image, 0L, 0L, true);
+
+            // Base64 인코딩된 이미지 생성
+            String base64Image = "data:image/jpeg;base64," + Base64.encodeBase64String(compressedImage);
+
+            // GPT 메시지 생성
+            List<Map<String, Object>> messages = List.of(
+                    Map.of("role", "system", "content", systemPrompt),
+                    Map.of("role", "user", "content", List.of(
+                            Map.of("type", "text", "text", userPrompt),
+                            Map.of("type", "image_url", "image_url", Map.of("url", base64Image))
+                    ))
+            );
+
+            // GPT API 호출
+            Map<String, String> gptResult = callGptApi(base64Image, messages);
+
+            // 결과에 S3 URL 추가
+            Map<String, String> result = new HashMap<>(gptResult);
+            result.put("imageUrl", fileUrl);
+
+            return result;
+
+        } catch (Exception e) {
             e.printStackTrace();
-            return Map.of("error", "GPT API 호출 실패: " + e.getMessage());
+            return Map.of("error", "처리 중 오류 발생: " + e.getMessage());
         }
     }
 
     // 식물 이름만 요청
     public Map<String, String> detectPlantName(MultipartFile image) {
         return detectPlant(image,
-                "당신은 식물 종 이름을 명사로만 알려주는 도우미입니다.",
-                "이 이미지는 식물입니다. 식물 이름만 알려주세요.");
+                "당신은 식물의 이름을 명확하게 알려주는 도우미입니다. 응답은 다음 형식을 따라야 합니다:\n"
+                        + "이름: [식물 이름]\n",
+
+                "이 이미지는 식물입니다. 식물의 이름을 위의 형식에 맞게 알려주세요.");
     }
 
     // 식물 이름 및 상태 요청
     public Map<String, String> detectPlantNameAndStatus(MultipartFile image) {
         return detectPlant(image,
-                "당신은 식물 상태를 분석하고 이름과 상태를 알려주는 도우미입니다.",
-                "이 이미지는 식물입니다. 식물의 이름과, 질병 상태, 대처방법을 알려주세요.");
+                "당신은 식물의 이름, 상태, 질병 여부 및 대처법을 명확하게 알려주는 도우미입니다. 응답은 다음 형식을 따라야 합니다:\n"
+                        + "이름: [식물 이름]\n"
+                        + "상태: [식물 상태]\n"
+                        + "대처법: [대처 방법]",
+                "이 이미지는 식물입니다. 식물의 이름, 상태, 질병 여부 및 대처법을 위의 형식에 맞게 알려주세요.");
     }
 
     // GPT 응답 파싱
