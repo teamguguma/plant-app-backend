@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 @Repository
-public interface PlantRepository extends JpaRepository<Plant, Integer> {
+public interface PlantRepository extends JpaRepository<Plant, Long> {
     List<Plant> findByUserId(Long userId); // 특정 사용자 ID로 식물 목록 조회
 
     // 특정 닉네임으로 식물 조회 (Room의 @Query 스타일)

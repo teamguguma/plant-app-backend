@@ -16,7 +16,6 @@ import java.util.List;
 public class PlantController {
 
     @Autowired
-    private PlantService plantService;
     private AwsS3Service awsS3Service;
     private final PlantService plantService; // final로 설정하여 불변성 보장
 
@@ -31,7 +30,7 @@ public class PlantController {
 
     // 특정 사용자의 식물 목록 조회
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<PlantDto>> getPlantDtos(@PathVariable int userId) {
+    public ResponseEntity<List<PlantDto>> getPlantDtos(@PathVariable Long  userId) {
         List<PlantDto> plantDtos = plantService.getPlantDtosByUser(userId);
         return ResponseEntity.ok(plantDtos);
     }
@@ -75,14 +74,14 @@ public class PlantController {
 
     // Update (업데이트)
     @PutMapping("/{id}")
-    public ResponseEntity<Plant> updatePlant(@PathVariable int id, @RequestBody String updatedNickname) {
+    public ResponseEntity<Plant> updatePlant(@PathVariable Long id, @RequestBody String updatedNickname) {
         Plant updatedPlant = plantService.updatePlant(id, updatedNickname);
         return ResponseEntity.ok(updatedPlant); // 업데이트된 데이터 반환
     }
 
     // Delete (ID로 삭제)
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deletePlantById(@PathVariable int id) {
+    public ResponseEntity<String> deletePlantById(@PathVariable Long id) {
         plantService.deletePlantById(id);
         return ResponseEntity.ok("Plant deleted successfully");
     }
