@@ -1,31 +1,44 @@
-package com.example.plantappbackend.controller;
-
 import com.example.plantappbackend.model.User;
 import com.example.plantappbackend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    // 로그인 또는 사용자 생성
     @PostMapping("/login")
-    public ResponseEntity<User> login(@RequestParam String client_uuid) {
-        User user = userService.findUser(client_uuid);
+    public ResponseEntity<User> loginOrCreateUser(
+            @RequestParam String client_uuid,
+            @RequestParam(required = false) String nickname
+    ) {
+        User user = userService.findOrCreateUser(client_uuid, nickname);
         return ResponseEntity.ok(user);
     }
 
-//    유저 추가
-//    로그인
-//    유저 탈퇴
-//    유저 닉네임 변경
-//    유저 환경설정 변경
-//    핸드폰 바꾸기
+    // 닉네임 변경
+    @PutMapping("/nickname")
+    public ResponseEntity<User> updateNickname(
+            @RequestParam String client_uuid,
+            @RequestParam String newNickname
+    ) {
+        User updatedUser = userService.updateNickname(client_uuid, newNickname);
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    // 사용자 삭제
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> deleteUser(@RequestParam String client_uuid) {
+        userService.deleteUser(client_uuid);
+        return ResponseEntity.ok("User successfully deleted.");
+    }
 }
