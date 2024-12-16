@@ -1,5 +1,6 @@
 package com.example.plantappbackend.service;
 
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -10,8 +11,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -32,24 +41,71 @@ public class CameraService {
         this.awsS3Service = awsS3Service;
     }
 
-    // 이미지 크기 확인
-    private void validateImageSize(MultipartFile image) {
-        if (image.getSize() > MAX_IMAGE_SIZE) {
-            throw new IllegalArgumentException("이미지 크기가 1MB를 초과합니다. 파일 크기를 줄여주세요.");
+    // 이미지 크기 확인 및 반복 압축
+    private byte[] compressImageUntilBelowLimit(byte[] imageBytes) {
+        try {
+            float quality = 0.8f; // 초기 압축 품질
+            BufferedImage originalImage = ImageIO.read(new ByteArrayInputStream(imageBytes));
+
+            while (imageBytes.length > MAX_IMAGE_SIZE) {
+                ByteArrayOutputStream compressedOutputStream = new ByteArrayOutputStream();
+
+                Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpg");
+                ImageWriter writer = writers.next();
+
+                ImageOutputStream outputStream = ImageIO.createImageOutputStream(compressedOutputStream);
+                writer.setOutput(outputStream);
+
+                ImageWriteParam params = writer.getDefaultWriteParam();
+                params.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                params.setCompressionQuality(quality);
+
+                writer.write(null, new javax.imageio.IIOImage(originalImage, null, null), params);
+
+                outputStream.close();
+                writer.dispose();
+
+                imageBytes = compressedOutputStream.toByteArray();
+
+                System.out.println("압축 후 이미지 크기: " + imageBytes.length / 1024 + "KB");
+
+                // 품질 감소
+                quality -= 0.1f;
+                if (quality < 0.1f) {
+                    throw new IllegalArgumentException("이미지 압축 품질을 낮췄음에도 크기를 줄일 수 없습니다.");
+                }
+            }
+
+            return imageBytes;
+        } catch (IOException e) {
+            throw new RuntimeException("이미지 압축 중 오류 발생", e);
+        }
+    }
+
+    // 이미지 크기 확인 후 압축 실행
+    private byte[] validateAndCompressImage(MultipartFile image) {
+        try {
+            byte[] imageBytes = image.getBytes();
+            if (imageBytes.length > MAX_IMAGE_SIZE) {
+                System.out.println("이미지 크기가 1MB를 초과하여 압축합니다.");
+                imageBytes = compressImageUntilBelowLimit(imageBytes);
+            }
+            return imageBytes;
+        } catch (IOException e) {
+            throw new RuntimeException("이미지 처리 중 오류 발생", e);
         }
     }
 
     // GPT API 호출
-    private Map<String, String> callGptApi(String imageUrl, List<Map<String, String>> messages) throws IOException {
+    private Map<String, String> callGptApi(String base64Image, List<Map<String, Object>> messages) throws IOException {
         String gptEndpoint = "https://api.openai.com/v1/chat/completions";
 
-        // HTTP 헤더 설정
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + openAiApiKey);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", "gpt-4");
+        requestBody.put("model", "gpt-4o");
         requestBody.put("messages", messages);
         requestBody.put("temperature", 0.0);
 
@@ -71,45 +127,67 @@ public class CameraService {
         return Map.of("name", "식별 실패", "status", "분석 실패");
     }
 
-    // 공통 식물 분석 로직
+    // 식물 분석 공통 로직
     private Map<String, String> detectPlant(MultipartFile image, String systemPrompt, String userPrompt) {
-//        validateImageSize(image);
-        String imageUrl = awsS3Service.uploadFile(image, 0, 0, true); // 기본값 전달
+        byte[] compressedImage = validateAndCompressImage(image);
 
-        List<Map<String, String>> messages = List.of(
+        // Base64 인코딩된 이미지 생성
+        String base64Image = "data:image/jpeg;base64," + Base64.encodeBase64String(compressedImage);
+
+        // 메시지 형식 수정
+        List<Map<String, Object>> messages = List.of(
                 Map.of("role", "system", "content", systemPrompt),
-                Map.of("role", "user", "content", userPrompt),
-                Map.of("role", "user", "content", imageUrl)
+                Map.of("role", "user", "content", List.of(
+                        Map.of("type", "text", "text", userPrompt),
+                        Map.of("type", "image_url", "image_url", Map.of("url", base64Image))
+                ))
         );
 
         try {
-            return callGptApi(imageUrl, messages);
+            return callGptApi(base64Image, messages);
         } catch (IOException e) {
             e.printStackTrace();
             return Map.of("error", "GPT API 호출 실패: " + e.getMessage());
         }
     }
 
-    // 요청 바디 구성: 식물 이름만 요청
+    // 식물 이름만 요청
     public Map<String, String> detectPlantName(MultipartFile image) {
         return detectPlant(image,
                 "당신은 식물 종 이름을 명사로만 알려주는 도우미입니다.",
                 "이 이미지는 식물입니다. 식물 이름만 알려주세요.");
     }
 
-    // 요청 바디 구성: 식물 이름 및 상태 요청
+    // 식물 이름 및 상태 요청
     public Map<String, String> detectPlantNameAndStatus(MultipartFile image) {
         return detectPlant(image,
                 "당신은 식물 상태를 분석하고 이름과 상태를 알려주는 도우미입니다.",
-                "이 이미지는 식물입니다. 식물의 질병과 대처방법을 알려주세요.");
+                "이 이미지는 식물입니다. 식물의 이름과, 질병 상태, 대처방법을 알려주세요.");
     }
 
     // GPT 응답 파싱
     private Map<String, String> parseResponseContent(String content) {
-        String[] parts = content.split("\n", 2); // "\n" 기준으로 나눔
-        String name = parts.length > 0 ? parts[0].trim() : "이름 정보 없음";
-        String status = parts.length > 1 ? parts[1].trim() : "상태 정보 없음";
+        String name = "이름 정보 없음";
+        String status = "상태 정보 없음";
+        String remedy = "대처법 정보 없음";
 
-        return Map.of("name", name, "status", status);
-    }
-}
+        // 각 줄을 "\n" 기준으로 분리
+        String[] lines = content.split("\n");
+        for (String line : lines) {
+            line = line.trim();
+            if (line.startsWith("이름:")) {
+                name = line.replace("이름:", "").trim();
+            } else if (line.startsWith("상태:")) {
+                status = line.replace("상태:", "").trim();
+            } else if (line.startsWith("대처법:")) {
+                remedy = line.replace("대처법:", "").trim();
+            }
+        }
+
+        // 결과 반환
+        return Map.of(
+                "name", name,
+                "status", status,
+                "remedy", remedy
+        );
+    }}

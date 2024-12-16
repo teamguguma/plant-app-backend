@@ -1,9 +1,14 @@
 package com.example.plantappbackend.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDate;
 
 @Entity
+@Getter
+@Setter
 @Table(name = "watering_record")
 public class WateringRecord {
 
