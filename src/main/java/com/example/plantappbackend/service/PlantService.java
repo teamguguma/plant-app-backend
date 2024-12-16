@@ -13,7 +13,7 @@ public class PlantService {
     @Autowired
     private PlantRepository plantRepository;
 
-    public List<Plant> getPlantsByUser(int userId) {
+    public List<Plant> getPlantsByUser(Long userId) {
         return plantRepository.findByUserId(userId);
     }
 

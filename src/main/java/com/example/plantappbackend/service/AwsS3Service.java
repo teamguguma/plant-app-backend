@@ -1,16 +1,18 @@
 package com.example.plantappbackend.service;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.example.plantappbackend.model.ImageMetadata;
+import com.example.plantappbackend.model.Plant;
 import com.example.plantappbackend.repository.ImageMetadataRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import com.amazonaws.services.s3.model.PutObjectRequest;
+
 import java.io.File;
 import java.io.FileOutputStream;
-import java.time.LocalDateTime;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -28,7 +30,7 @@ public class AwsS3Service {
     }
 
 
-    public String uploadFile(MultipartFile file, int userId, int plantId, boolean isNameOnly) {
+    public String uploadFile(MultipartFile file, Long userId, Long plantId, boolean isNameOnly) {
         // MultipartFile을 File 객체로 변환
         File convertedFile = convertMultipartFileToFile(file);
         // 고유한 파일 이름 생성
@@ -73,13 +75,17 @@ public class AwsS3Service {
         return uuid + "_" + originalFilename.replace(" ", "_");
     }
 
-    private void saveMetadata(int userId, int plantId, String fileUrl, boolean isNameOnly) {
+    private void saveMetadata(Long userId, Long plantId, String fileUrl, boolean isNameOnly) {
         ImageMetadata metadata = new ImageMetadata();
-        metadata.setUserId(userId);
-        metadata.setPlantId(plantId);
+
+        // Plant 객체 생성 및 설정
+        Plant plant = new Plant();
+        plant.setId(plantId); // Plant 엔티티 ID 설정
+
+        metadata.setPlant(plant);
         metadata.setFileUrl(fileUrl);
         metadata.setUploadedAt(LocalDateTime.now());
-        metadata.setRecognitionType(isNameOnly ? "NAME_ONLY" : "NAME_AND_STATUS");
+        metadata.setRecognitionType(isNameOnly ? ImageMetadata.RecognitionType.NAME_ONLY : ImageMetadata.RecognitionType.NAME_AND_STATUS);
 
         imageMetadataRepository.save(metadata);
     }

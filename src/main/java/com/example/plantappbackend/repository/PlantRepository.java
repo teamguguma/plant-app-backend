@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface PlantRepository extends JpaRepository<Plant, Integer> {
-    List<Plant> findByUserId(int userId); // 특정 사용자 ID로 식물 목록 조회
+    List<Plant> findByUserId(Long userId); // 특정 사용자 ID로 식물 목록 조회
 }

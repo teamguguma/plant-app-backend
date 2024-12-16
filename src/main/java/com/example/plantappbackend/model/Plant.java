@@ -1,36 +1,53 @@
 package com.example.plantappbackend.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
+@Getter
+@Setter
+//@Table(name = "plant") // 테이블 이름 매핑
 public class Plant {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "USER_ID", nullable = false) // 외래키 매핑
     private User user;
-    private String name;
-    @Column(name = "nickname")
-    private String nickname;
-    private String imageUrl;
-    private Integer waterInterval; // 물 주기
-    private LocalDate lastWateredDate; // 마지막으로 물 준 날짜
-    private String characteristics;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "name", nullable = false)
+    private String name;
+
+    @Column(name = "nickname", nullable = false)
+    private String nickname;
+
+    @Column(name = "image_url", nullable = false)
+    private String imageUrl; // S3 이미지 URL 저장
+
+    @Column(name = "water_interval")
+    private Integer waterInterval; // 물 주기
+
+    @Column(name = "last_watered_date")
+    private LocalDate lastWateredDate; // 마지막으로 물 준 날짜
+
+    @Column(name = "characteristics", nullable = true)
+    private String characteristics; // 식물 설명 (NULL 허용)
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now(); // 생성 시간
 
     // Getters and Setters
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
