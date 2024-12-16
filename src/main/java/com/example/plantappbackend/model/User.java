@@ -20,10 +20,10 @@ public class User {
     private Long id;
 
     @Column(name = "username", nullable = false) // 사용자 이름
-    private String username;
+    private String userName;
 
-    @Column(name = "client_uuid", unique = true, nullable = false) // 고유 UUID
-    private String clientUuid;
+    @Column(name = "user_uuid", unique = true, nullable = false) // 고유 UUID
+    private String userUuid;
 
     @Column(name = "role", nullable = false) // 사용자 역할
     private String role;
@@ -49,19 +49,19 @@ public class User {
     }
 
     public String getUsername() {
-        return username;
+        return userName;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUsername(String userName) {
+        this.userName = userName;
     }
 
     public String getClientUuid() {
-        return clientUuid;
+        return userUuid;
     }
 
-    public void setClientUuid(String clientUuid) {
-        this.clientUuid = clientUuid;
+    public void setClientUuid(String userUuid) {
+        this.userUuid = userUuid;
     }
 
     public String getRole() {
