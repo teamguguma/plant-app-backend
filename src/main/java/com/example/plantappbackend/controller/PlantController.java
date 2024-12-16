@@ -1,13 +1,12 @@
 package com.example.plantappbackend.controller;
 
+import com.example.plantappbackend.dto.PlantDto;
 import com.example.plantappbackend.model.Plant;
 import com.example.plantappbackend.service.AwsS3Service;
 import com.example.plantappbackend.service.PlantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import com.example.plantappbackend.dto.PlantDto;
 
 import java.util.List;
 
@@ -15,81 +14,101 @@ import java.util.List;
 @RequestMapping("/api/plants")
 public class PlantController {
 
-    @Autowired
-    private AwsS3Service awsS3Service;
-    private final PlantService plantService; // final로 설정하여 불변성 보장
+    private final AwsS3Service awsS3Service;
+    private final PlantService plantService;
 
-    // 생성자를 통해 의존성 주입
-    public PlantController(PlantService plantService) {
+    @Autowired
+    public PlantController(AwsS3Service awsS3Service, PlantService plantService) {
+        this.awsS3Service = awsS3Service;
         this.plantService = plantService;
     }
 
-    // @Autowired
-    //    private PlantService plantService;
-    //원래 16줄~21줄 전에 있었던 코드, 필드 주입 방식 -> 생성자 주입 방식 (@Autowired 경고가 뜨길래,,, 불안해서 바꾼 것, 원래대로 돌려도 괜춘)
-
-    // 특정 사용자의 식물 목록 조회
+    /**
+     * 특정 사용자의 식물 목록 조회
+     */
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<PlantDto>> getPlantDtos(@PathVariable Long  userId) {
+    public ResponseEntity<List<PlantDto>> getPlantDtos(@PathVariable Long userId) {
         List<PlantDto> plantDtos = plantService.getPlantDtosByUser(userId);
         return ResponseEntity.ok(plantDtos);
     }
 
-    // 식물 등록
+    /**
+     * 식물 등록
+     */
     @PostMapping("/register")
     public ResponseEntity<?> addPlant(
-            @RequestBody Plant plant,
-            @RequestPart("image") MultipartFile image // 업로드된 이미지 파일
+            @RequestBody Plant plant // JSON 데이터를 Plant 객체로 받기
     ) {
         try {
-            // 유효성 검사: user_id가 포함되어 있는지 확인
-            if (plant.getUser() == null || plant.getUser().getId() == 0) {
-                return ResponseEntity.badRequest().body("user_id 정보가 필요합니다.");
-            }
-            // S3에 이미지 업로드
-            String imageUrl = awsS3Service.uploadFile(image, plant.getUser().getId(), plant.getId(), true);
-            plant.setImageUrl(imageUrl); // Plant 객체에 S3 URL 설정
-
-            // DB에 저장
+            // 저장 처리
             Plant savedPlant = plantService.savePlant(plant);
             return ResponseEntity.ok(savedPlant);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("요청 처리 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.badRequest().body("요청 처리 중 오류 발생: " + e.getMessage());
         }
     }
 
-    // Create (삽입) - 간단한 POST 요청으로 데이터 저장
+    /**
+     * 간단한 식물 데이터 저장
+     */
     @PostMapping
     public ResponseEntity<Plant> addPlantBasic(@RequestBody Plant plant) {
-        Plant newPlant = plantService.savePlant(plant);
-        return ResponseEntity.ok(newPlant); // 저장된 데이터 반환
+        try {
+            Plant newPlant = plantService.savePlant(plant);
+            return ResponseEntity.ok(newPlant);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(null);
+        }
     }
 
-    // Read (닉네임으로 조회)
+    /**
+     * 닉네임으로 식물 조회
+     */
     @GetMapping("/nickname/{nickname}")
     public ResponseEntity<List<Plant>> getPlantsByNickname(@PathVariable String nickname) {
         List<Plant> plants = plantService.getPlantsByNickname(nickname);
         return ResponseEntity.ok(plants);
     }
 
-    // Update (업데이트)
+    /**
+     * 식물 데이터 업데이트
+     */
     @PutMapping("/{id}")
-    public ResponseEntity<Plant> updatePlant(@PathVariable Long id, @RequestBody String updatedNickname) {
-        Plant updatedPlant = plantService.updatePlant(id, updatedNickname);
-        return ResponseEntity.ok(updatedPlant); // 업데이트된 데이터 반환
+    public ResponseEntity<?> updatePlant(
+            @PathVariable Long id,
+            @RequestBody String updatedNickname
+    ) {
+        try {
+            Plant updatedPlant = plantService.updatePlant(id, updatedNickname);
+            return ResponseEntity.ok(updatedPlant);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("업데이트 중 오류가 발생했습니다: " + e.getMessage());
+        }
     }
 
-    // Delete (ID로 삭제)
+    /**
+     * 식물 데이터 삭제 (ID 기반)
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deletePlantById(@PathVariable Long id) {
-        plantService.deletePlantById(id);
-        return ResponseEntity.ok("Plant deleted successfully");
+        try {
+            plantService.deletePlantById(id);
+            return ResponseEntity.ok("Plant deleted successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("삭제 중 오류가 발생했습니다: " + e.getMessage());
+        }
     }
 
-    // Delete (객체로 삭제)
+    /**
+     * 식물 데이터 삭제 (객체 기반)
+     */
     @DeleteMapping("/object")
     public ResponseEntity<String> deletePlant(@RequestBody Plant plant) {
-        plantService.deletePlant(plant);
-        return ResponseEntity.ok("Plant deleted successfully");
+        try {
+            plantService.deletePlant(plant);
+            return ResponseEntity.ok("Plant deleted successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("삭제 중 오류가 발생했습니다: " + e.getMessage());
+        }
     }
 }
