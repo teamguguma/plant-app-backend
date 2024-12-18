@@ -22,7 +22,7 @@ public class User {
     @Column(name = "username", nullable = false) // 사용자 이름
     private String username;
 
-    @Column(name = "client_uuid", unique = true, nullable = false) // 고유 UUID
+    @Column(name = "user_uuid", unique = true, nullable = false) // 고유 UUID
     private String clientUuid;
 
     @Column(name = "role", nullable = false) // 사용자 역할
