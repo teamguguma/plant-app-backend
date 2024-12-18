@@ -10,15 +10,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/user")
 public class UserController {
 
     @Autowired
     private UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<User> login(@RequestParam String client_uuid) {
-        User user = userService.findUser(client_uuid);
+    public ResponseEntity<User> login(@RequestParam String user_uuid) {
+        User user = userService.findUser(user_uuid);
         return ResponseEntity.ok(user);
     }
 

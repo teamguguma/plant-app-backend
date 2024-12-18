@@ -89,7 +89,7 @@ public class PlantController {
     /**
      * 식물 데이터 삭제 (ID 기반)
      */
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deletePlantById(@PathVariable Long id) {
         try {
             plantService.deletePlantById(id);
@@ -101,14 +101,17 @@ public class PlantController {
 
     /**
      * 식물 데이터 삭제 (객체 기반)
+     *
+     *
+     *     @DeleteMapping("/object")
+     *     public ResponseEntity<String> deletePlant(@RequestBody Plant plant) {
+     *         try {
+     *             plantService.deletePlant(plant);
+     *             return ResponseEntity.ok("Plant deleted successfully");
+     *         } catch (Exception e) {
+     *             return ResponseEntity.badRequest().body("삭제 중 오류가 발생했습니다: " + e.getMessage());
+     *         }
+     *     }
      */
-    @DeleteMapping("/object")
-    public ResponseEntity<String> deletePlant(@RequestBody Plant plant) {
-        try {
-            plantService.deletePlant(plant);
-            return ResponseEntity.ok("Plant deleted successfully");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("삭제 중 오류가 발생했습니다: " + e.getMessage());
-        }
-    }
+
 }

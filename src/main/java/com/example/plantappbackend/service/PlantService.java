@@ -14,7 +14,6 @@ public class PlantService {
 
     @Autowired
     private PlantRepository plantRepository;
-
     public List<Plant> getPlantsByUser(Long userId) {
         return plantRepository.findByUserId(userId);
     }
@@ -24,6 +23,7 @@ public class PlantService {
         List<Plant> plants = getPlantsByUser(userId); // 기존 메서드 호출
         return plants.stream()
                 .map(plant -> new PlantDto(
+                        plant.getId(), // ID 추가
                         plant.getName(),
                         plant.getNickname(),
                         plant.getImageUrl()))
