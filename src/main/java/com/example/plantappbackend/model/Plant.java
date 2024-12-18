@@ -26,7 +26,7 @@ public class Plant {
     @Column(nullable = false)
     private String nickname;
 
-    @Column(name = "image_url", nullable = false)
+    @Column(name = "image_url")
     private String imageUrl;
 
     @Column(name = "water_interval")
