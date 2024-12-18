@@ -22,12 +22,19 @@ public class CameraController {
         this.cameraService = cameraService;
     }
 
+    /*
+    * 요청 처리 공통 메서드
+    * @param image 이미지 파일
+    * @param includeStatus 상태 포함 여부
+    * @return 식물 인식 결과*/
+
     // OpenAI API 식물 이름 인식
     @PostMapping("/recognize")
     public ResponseEntity<Map<String, String>> detectPlantName(@RequestParam("image") MultipartFile image) {
         Map<String, String> result = cameraService.detectPlantName(image);
         return ResponseEntity.ok(result);
     }
+
     // OpenAI API 식물 이름 인식 (상태)
     @PostMapping("/status")
     public ResponseEntity<Map<String, String>> detectPlantNameAndStatus(@RequestParam("image") MultipartFile image) {
