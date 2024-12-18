@@ -1,5 +1,4 @@
 package com.example.plantappbackend.service;
-
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.plantappbackend.model.User;
@@ -30,7 +29,6 @@ public class UserService {
         User user = new User(userUuid, nickname != null ? nickname : "New User");
         return userRepository.save(user);
     }
-
     @Transactional
     public void deleteUser(String userUuid) {
         if (!userRepository.findByUserUuid(userUuid).isPresent()) {
