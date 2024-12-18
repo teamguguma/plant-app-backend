@@ -35,5 +35,13 @@ public class UserService {
             throw new RuntimeException("User not found with UUID: " + userUuid);
         }
         userRepository.deleteByUserUuid(userUuid);
+
+    public User findUser(String user_uuid) {
+        return userRepository.findUserByClientUuid(user_uuid)
+                .orElseGet(() -> {
+                    User user = new User();
+                    user.setClientUuid(user_uuid);
+                    return userRepository.save(user);
+                });
     }
 }

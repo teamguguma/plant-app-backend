@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/user")
 public class UserController {
 
     private final UserService userService;
@@ -22,7 +22,6 @@ public class UserController {
         this.userService = userService;
     }
 
-    // 유저 조회 및 로그인
 // 유저 조회 및 로그인
     @PostMapping("/read")
     public ResponseEntity<Map<String, Object>> checkUserExists(@RequestParam String userUuid) {
@@ -37,6 +36,7 @@ public class UserController {
             response.put("message", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
+
     }
 
     // 신규 유저 생성
