@@ -1,9 +1,9 @@
 package com.example.plantappbackend.controller;
 
-import com.example.plantappbackend.dto.PlantDto;
 import com.example.plantappbackend.model.Plant;
-import com.example.plantappbackend.service.AwsS3Service;
+import com.example.plantappbackend.model.User;
 import com.example.plantappbackend.service.PlantService;
+import com.example.plantappbackend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,52 +14,38 @@ import java.util.List;
 @RequestMapping("/api/plants")
 public class PlantController {
 
-    private final AwsS3Service awsS3Service;
     private final PlantService plantService;
+    private final UserService userService;
 
     @Autowired
-    public PlantController(AwsS3Service awsS3Service, PlantService plantService) {
-        this.awsS3Service = awsS3Service;
+    public PlantController(PlantService plantService, UserService userService) {
         this.plantService = plantService;
+        this.userService = userService;
     }
 
-    /**
-     * 특정 사용자의 식물 목록 조회
-     */
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<PlantDto>> getPlantDtos(@PathVariable Long userId) {
-        List<PlantDto> plantDtos = plantService.getPlantDtosByUser(userId);
-        return ResponseEntity.ok(plantDtos);
+    public ResponseEntity<List<Plant>> getPlantsByUserId(@PathVariable Long userId) {
+        return ResponseEntity.ok(plantService.getPlantsByUser(userId));
     }
 
-    /**
-     * 식물 등록
-     */
-    @PostMapping("/register")
-    public ResponseEntity<?> addPlant(
-            @RequestBody Plant plant // JSON 데이터를 Plant 객체로 받기
-    ) {
+    @PostMapping("/create")
+    public ResponseEntity<?> addPlant(@RequestBody Plant plant) {
+        System.out.println("Received Plant Data: " + plant);
         try {
-            // 저장 처리
+            User user = userService.findByUserUuid(plant.getUserUuid());
+            plant.setUser(user);
+
             Plant savedPlant = plantService.savePlant(plant);
+            System.out.println("Saved Plant: " + savedPlant);
             return ResponseEntity.ok(savedPlant);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("요청 처리 중 오류 발생: " + e.getMessage());
+            System.err.println("Error: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
     }
 
-    /**
-     * 간단한 식물 데이터 저장
-     */
-    @PostMapping
-    public ResponseEntity<Plant> addPlantBasic(@RequestBody Plant plant) {
-        try {
-            Plant newPlant = plantService.savePlant(plant);
-            return ResponseEntity.ok(newPlant);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(null);
-        }
-    }
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> deletePlant(@PathVariable Long id) {
 
     /**
      * 닉네임으로 식물 조회
@@ -91,10 +77,15 @@ public class PlantController {
      */
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deletePlantById(@PathVariable Long id) {
+
         try {
             plantService.deletePlantById(id);
             return ResponseEntity.ok("Plant deleted successfully");
         } catch (Exception e) {
+
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
+    }
             return ResponseEntity.badRequest().body("삭제 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
