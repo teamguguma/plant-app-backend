@@ -28,7 +28,7 @@ public class CameraController {
         Map<String, String> result = cameraService.detectPlantName(image);
         return ResponseEntity.ok(result);
     }
-    // OpenAI API 식물 이름 인식
+    // OpenAI API 식물 이름 인식 (상태)
     @PostMapping("/status")
     public ResponseEntity<Map<String, String>> detectPlantNameAndStatus(@RequestParam("image") MultipartFile image) {
         Map<String, String> result = cameraService.detectPlantNameAndStatus(image);
