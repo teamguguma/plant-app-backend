@@ -22,7 +22,6 @@ public class UserController {
         this.userService = userService;
     }
 
-// 유저 조회 및 로그인
     @PostMapping("/read")
     public ResponseEntity<Map<String, Object>> checkUserExists(@RequestParam String userUuid) {
         try {
@@ -36,9 +35,17 @@ public class UserController {
             response.put("message", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
-
     }
 
+    /* 유저 생성
+    POST /api/plants/create
+    Content-Type: application/json
+    {
+        "name": "Rose",
+        "nickname": "Beautiful Flower",
+        "userUuid": "user-uuid-1234"
+    }
+    */
     // 신규 유저 생성
     @PostMapping("/create")
     public ResponseEntity<?> userCreate(@RequestBody UserCreateRequest request) {
@@ -51,7 +58,6 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
-
     // 닉네임 변경
 //    @PutMapping("/update/nickname")
 //    public ResponseEntity<User> updateUserNickname(

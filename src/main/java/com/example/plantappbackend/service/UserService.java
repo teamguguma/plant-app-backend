@@ -1,4 +1,5 @@
 package com.example.plantappbackend.service;
+
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.plantappbackend.model.User;
@@ -29,19 +30,12 @@ public class UserService {
         User user = new User(userUuid, nickname != null ? nickname : "New User");
         return userRepository.save(user);
     }
+
     @Transactional
     public void deleteUser(String userUuid) {
         if (!userRepository.findByUserUuid(userUuid).isPresent()) {
             throw new RuntimeException("User not found with UUID: " + userUuid);
         }
         userRepository.deleteByUserUuid(userUuid);
-
-    public User findUser(String user_uuid) {
-        return userRepository.findUserByClientUuid(user_uuid)
-                .orElseGet(() -> {
-                    User user = new User();
-                    user.setClientUuid(user_uuid);
-                    return userRepository.save(user);
-                });
     }
 }
