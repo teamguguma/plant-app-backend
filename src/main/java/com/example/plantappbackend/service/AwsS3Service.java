@@ -89,4 +89,25 @@ public class AwsS3Service {
 
         imageMetadataRepository.save(metadata);
     }
+
+
+    public String uploadFileOnlyUrl(MultipartFile file) {
+        File convertedFile = convertMultipartFileToFile(file);
+        String fileName = generateFileName(file.getOriginalFilename());
+
+        try {
+            // S3에 파일 업로드
+            amazonS3.putObject(new PutObjectRequest(bucketName, fileName, convertedFile));
+            // 업로드된 파일의 URL 반환
+            return amazonS3.getUrl(bucketName, fileName).toString();
+        } finally {
+            // 임시 파일 삭제
+            if (convertedFile.exists()) {
+                boolean deleted = convertedFile.delete();
+                if (!deleted) {
+                    System.err.println("임시 파일 삭제 실패: " + convertedFile.getAbsolutePath());
+                }
+            }
+        }
+    }
 }
