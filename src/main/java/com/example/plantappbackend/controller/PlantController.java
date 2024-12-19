@@ -26,10 +26,23 @@ public class PlantController {
     /**
      * 특정 사용자의 식물 목록 조회
      */
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Plant>> getPlantsByUserId(@PathVariable Long userId) {
-        return ResponseEntity.ok(plantService.getPlantsByUser(userId));
+    @GetMapping("/user/{userUuid}")
+    public ResponseEntity<?> getPlantsByUserUuid(@PathVariable String userUuid) {
+        try {
+            // UUID로 사용자 조회
+            User user = userService.findByUserUuid(userUuid);
+            if (user == null) {
+                return ResponseEntity.badRequest().body("사용자를 찾을 수 없습니다.");
+            }
+
+            // 사용자 ID로 식물 목록 조회
+            List<Plant> plants = plantService.getPlantsByUser(user.getId());
+            return ResponseEntity.ok(plants);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("조회 중 오류가 발생했습니다: " + e.getMessage());
+        }
     }
+
 
     /**
      * 새로운 식물 데이터 생성
